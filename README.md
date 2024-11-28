@@ -93,8 +93,50 @@ dependencies {
 ## Build source
 
 * Requirements: Java 11, mingw64 and emscripten
-* Windows only for now.
+* Windows only for now [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/?cid=learn-onpage-download-install-visual-studio-page-cta).
 
+### Windows build instructions
+```powershell
+##
+## Ensure that vcvarsall.bat is available for the build commands:
+##
+
+# Specify the path to vcvarsall.bat, this is an example yours may be different
+$vcvarsPath = "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build"
+
+# Add the path to vcvarsall.bat to the PATH temporary for the current session
+$env:PATH += ";$vcvarsPath"
+
+# (Alternative 1) add the path to vcvarsall.bat to the PATH permanently for the current user
+# [Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";$vcvarsPath", [EnvironmentVariableTarget]::User)
+# (Alternative 2) add the path to vcvarsall.bat to the PATH permanently for all users (requires admin)
+# [Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";$vcvarsPath", [EnvironmentVariableTarget]::Machine)
+
+##
+## Build Windows natives for the project libraries
+##
+.\gradlew.bat download_all_sources
+.\gradlew.bat :imgui:imgui-build:build_project_windows64
+.\gradlew.bat :extensions:imlayout:imlayout-build:build_project_windows64
+.\gradlew.bat :extensions:ImGuiColorTextEdit:textedit-build:build_project_windows64
+.\gradlew.bat :extensions:imgui-node-editor:nodeeditor-build:build_project_windows64
+.\gradlew.bat :imgui-ext:ext-build:build_project_windows64
+
+##
+## Verify that the natives are built
+##
+ls .\imgui\imgui-build\build\c++\libs\windows\vc
+# imgui64_.lib
+# imgui64.dll
+# imgui64.exp
+# imgui64.lib
+# 👍
+
+## Run an example project
+.\gradlew.bat :examples:basic:desktop:basic-run-desktop
+```
+
+### Old build instructions
 ```
 ##### ImGui
 ./gradlew :imgui:imgui-build:download_source
