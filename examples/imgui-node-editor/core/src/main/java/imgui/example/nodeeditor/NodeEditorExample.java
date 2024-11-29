@@ -3,6 +3,7 @@ package imgui.example.nodeeditor;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import imgui.example.nodeeditor.demo.BlueprintExample;
+import imgui.example.nodeeditor.demo.BlueprintV2Example;
 import imgui.example.nodeeditor.demo.SimpleExample;
 import imgui.example.renderer.ImGuiRenderer;
 import imgui.extension.nodeeditor.Config;
@@ -16,6 +17,7 @@ public class NodeEditorExample extends ImGuiRenderer {
     private EditorContext editorContext;
 
     private BlueprintExample blueprintExample;
+    private BlueprintV2Example blueprintV2Example;
 
     @Override
     public void show() {
@@ -39,13 +41,17 @@ public class NodeEditorExample extends ImGuiRenderer {
             }
         });
 
-        blueprintExample = new BlueprintExample();
+//        blueprintExample = new BlueprintExample();
+        blueprintV2Example = new BlueprintV2Example();
     }
 
     @Override
     public void renderImGui() {
-        SimpleExample.render(editorContext);
+//        SimpleExample.render(editorContext);
 //        blueprintExample.render(editorContext);
+
+        blueprintV2Example.update();
+        blueprintV2Example.render(editorContext);
     }
 
     @Override
