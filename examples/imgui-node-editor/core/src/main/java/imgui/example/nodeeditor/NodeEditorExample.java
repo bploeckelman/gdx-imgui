@@ -42,7 +42,7 @@ public class NodeEditorExample extends ImGuiRenderer {
         });
 
 //        blueprintExample = new BlueprintExample();
-        blueprintV2Example = new BlueprintV2Example();
+        blueprintV2Example = new BlueprintV2Example(editorContext);
     }
 
     @Override

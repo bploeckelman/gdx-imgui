@@ -26,8 +26,8 @@ public class BlueprintV2Example {
     private final EditorInfoPane infoPane;
     private final EditorNodePane nodePane;
 
-    public BlueprintV2Example() {
-        this.session = new EditorSession(this);
+    public BlueprintV2Example(EditorContext context) {
+        this.session = new EditorSession(this, context);
         this.infoPane = new EditorInfoPane(this);
         this.nodePane = new EditorNodePane(this);
     }
@@ -64,12 +64,12 @@ public class BlueprintV2Example {
     }
 
     public void render(EditorContext context) {
+        ImGui.SetNextWindowPos(ImVec2.TMP_1.set(0, 0));
+        ImGui.SetNextWindowSize(ImGui.GetMainViewport().get_Size());
+
         ImGui.Begin("Blueprint V2", null, MAIN_WINDOW_FLAGS);
         ImGui.PushStyleVar(ImGuiStyleVar_WindowRounding, 0f);
-        ImGui.PushStyleVar(ImGuiStyleVar_WindowTitleAlign, new ImVec2(0.5f, 0.5f));
-
-        NodeEditor.SetCurrentEditor(context);
-        NodeEditor.Begin("Node Editor");
+        ImGui.PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2.TMP_1.set(0.5f, 0.5f));
 
         var cursorScreenPos = Objects.requireNonNull(ImGui.GetCursorScreenPos());
         var availableSize = Objects.requireNonNull(ImGui.GetContentRegionAvail());
@@ -84,12 +84,9 @@ public class BlueprintV2Example {
 
         ImGui.SameLine();
 
-        ImGui.SetNextWindowPos(ImVec2.TMP_2.set(cursorScreenPos.get_x() + infoPaneWidth, cursorScreenPos.get_y()));
-        ImGui.SetNextWindowSize(ImVec2.TMP_3.set(nodePaneWidth, paneHeight), ImGuiCond.ImGuiCond_Always);
+        ImGui.SetNextWindowPos(ImVec2.TMP_1.set(cursorScreenPos.get_x() + infoPaneWidth, cursorScreenPos.get_y()));
+        ImGui.SetNextWindowSize(ImVec2.TMP_1.set(nodePaneWidth, paneHeight), ImGuiCond.ImGuiCond_Always);
         nodePane.render();
-
-        // TODO(brian): native crash here, not sure the cause yet
-        NodeEditor.End();
 
         ImGui.PopStyleVar(2);
         ImGui.End();

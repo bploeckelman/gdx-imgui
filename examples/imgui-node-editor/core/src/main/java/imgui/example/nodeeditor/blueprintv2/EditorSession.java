@@ -2,6 +2,7 @@ package imgui.example.nodeeditor.blueprintv2;
 
 import com.badlogic.gdx.Gdx;
 import imgui.example.nodeeditor.demo.BlueprintV2Example;
+import imgui.extension.nodeeditor.EditorContext;
 import imgui.extension.nodeeditor.NodeEditor;
 import imgui.idl.helper.IDLBool;
 import imgui.idl.helper.IDLInt;
@@ -32,6 +33,7 @@ public class EditorSession {
     private final float touchTime = 1f;
 
     public final BlueprintV2Example editor;
+    public final EditorContext editorContext;
     public final List<Node> nodes = new ArrayList<>();
     public final List<Link> links = new ArrayList<>();
     public final IDLBool showOrdinals = new IDLBool(false);
@@ -42,8 +44,9 @@ public class EditorSession {
     public IDLIntArray selectedNodes = new IDLIntArray(0);
     public IDLIntArray selectedLinks = new IDLIntArray(0);
 
-    public EditorSession(BlueprintV2Example editor) {
+    public EditorSession(BlueprintV2Example editor, EditorContext context) {
         this.editor = editor;
+        this.editorContext = context;
 
         nodeRegistry.register(
             NodeFactory.text(),
