@@ -71,20 +71,22 @@ public class BlueprintV2Example {
         ImGui.PushStyleVar(ImGuiStyleVar_WindowRounding, 0f);
         ImGui.PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2.TMP_1.set(0.5f, 0.5f));
 
-        var cursorScreenPos = Objects.requireNonNull(ImGui.GetCursorScreenPos());
-        var availableSize = Objects.requireNonNull(ImGui.GetContentRegionAvail());
-
+        var availableSize = ImGui.GetContentRegionAvail();
         float infoPaneWidth = (1 / 4f) * availableSize.get_x();
         float nodePaneWidth = availableSize.get_x() - infoPaneWidth;
         float paneHeight = availableSize.get_y();
 
-        ImGui.SetNextWindowPos(cursorScreenPos);
+        ImGui.SetNextWindowPos(ImGui.GetCursorScreenPos());
         ImGui.SetNextWindowSize(ImVec2.TMP_1.set(infoPaneWidth, paneHeight));
         infoPane.render();
 
         ImGui.SameLine();
 
-        ImGui.SetNextWindowPos(ImVec2.TMP_1.set(cursorScreenPos.get_x() + infoPaneWidth, cursorScreenPos.get_y()));
+        var innerSpacing = ImGui.GetStyle().get_ItemInnerSpacing().get_x();
+        var nodePanePos = ImVec2.TMP_1.set(
+                ImGui.GetCursorScreenPos().get_x() + infoPaneWidth - innerSpacing,
+                ImGui.GetCursorScreenPos().get_y());
+        ImGui.SetNextWindowPos(nodePanePos);
         ImGui.SetNextWindowSize(ImVec2.TMP_1.set(nodePaneWidth, paneHeight), ImGuiCond.ImGuiCond_Always);
         nodePane.render();
 
