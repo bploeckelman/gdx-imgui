@@ -43,6 +43,7 @@ public class EditorSession {
 
     public IDLIntArray selectedNodes = new IDLIntArray(0);
     public IDLIntArray selectedLinks = new IDLIntArray(0);
+    public int selectionChangeCount;
 
     public EditorSession(BlueprintV2Example editor, EditorContext context) {
         this.editor = editor;
@@ -55,9 +56,10 @@ public class EditorSession {
     }
 
     public void update(float delta) {
+        NodeEditor.SetCurrentEditor(editorContext);
         updateTouch(delta);
-        // TODO(brian): crashes, need to adjust usage for gdx-imgui
-//        updateSelections();
+        updateSelections();
+        NodeEditor.SetCurrentEditor(null);
     }
 
     // Editor object management -----------------------------------------------
@@ -166,6 +168,11 @@ public class EditorSession {
         if (numSelectedLinks < totalCount) {
             selectedLinks.resize(numSelectedLinks);
         }
+
+        // update selection change count
+        if (hasSelectionChanged()) {
+            selectionChangeCount++;
+        }
     }
 
     public boolean isSelected(Node node) {
@@ -199,9 +206,7 @@ public class EditorSession {
     }
 
     public boolean hasSelectionChanged() {
-        // TODO(brian): crashes, need to adjust usage for gdx-imgui
-//        return NodeEditor.HasSelectionChanged();
-        return false;
+        return NodeEditor.HasSelectionChanged();
     }
 
     public void clearSelection() {

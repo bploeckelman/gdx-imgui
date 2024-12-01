@@ -11,9 +11,8 @@ import imgui.example.nodeeditor.blueprintv2.Link;
 import imgui.extension.nodeeditor.EditorContext;
 import imgui.extension.nodeeditor.NodeEditor;
 
-import java.util.Objects;
-
-import static imgui.ImGuiStyleVar.*;
+import static imgui.ImGuiStyleVar.ImGuiStyleVar_WindowRounding;
+import static imgui.ImGuiStyleVar.ImGuiStyleVar_WindowTitleAlign;
 import static imgui.ImGuiWindowFlags.*;
 
 public class BlueprintV2Example {
@@ -56,14 +55,13 @@ public class BlueprintV2Example {
     }
 
     public void update() {
-        var io = Objects.requireNonNull(ImGui.GetIO());
-        var delta = io.get_DeltaTime();
+        var delta = ImGui.GetIO().get_DeltaTime();
         session.update(delta);
         infoPane.update(delta);
         nodePane.update(delta);
     }
 
-    public void render(EditorContext context) {
+    public void render() {
         ImGui.SetNextWindowPos(ImVec2.TMP_1.set(0, 0));
         ImGui.SetNextWindowSize(ImGui.GetMainViewport().get_Size());
 

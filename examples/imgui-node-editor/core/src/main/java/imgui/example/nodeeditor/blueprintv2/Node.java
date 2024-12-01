@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static imgui.ImDrawFlags.*;
+
 public class Node extends EditorObject {
 
     public enum Section { NODE, HEADER, CONTENT, INPUTS, MIDDLE, OUTPUTS }
@@ -55,8 +57,6 @@ public class Node extends EditorObject {
         // content ----------------------------------------
         ImGui.BeginGroup();
         {
-//            ImGui.spacing();
-
             // inputs
             ImGui.BeginGroup();
             inputs.forEach(Pin::render);
@@ -116,42 +116,51 @@ public class Node extends EditorObject {
         renderBackgrounds();
     }
 
+    // TODO: it doesn't look like there's a way to get at node-editor style var values currently because
+    //  `Style` returned by `NodeEditor.GetStyle()` doesn't have `get_StyleVarX()` methods like `ImGuiStyle` does.
+    //  So these values are copied over from EditorNodePane for the time being
+    private static final float  styleNodeRounding = 5f;
+    private static final float  styleNodeBorderWidth = 1.5f;
+    private static final float  styleHoveredNodeBorderWidth = 2.5f;
+    private static final float  styleSelectedNodeBorderWidth = 3.5f;
+
     private void renderBackgrounds() {
-//        var draw = NodeEditor.GetNodeBackgroundDrawList(globalId);
-//        var style = NodeEditor.GetStyle();
-//        var padding = style.getNodePadding();
-//        var rounding = style.getNodeRounding() - 1f;
-//        var borderWidth = style.getNodeBorderWidth();
-//        var borderWidthHover = style.getHoveredNodeBorderWidth();
-//        var borderWidthSelect = style.getSelectedNodeBorderWidth();
-//        var isHovered = NodeEditor.getHoveredNode() == globalId;
-//        var isSelected = NodeEditor.isNodeSelected(globalId);
-//        var border = borderWidth;
-//
-//        // header background - with adjustments to fit the full node width
-//        // NOTE: min/max are top-left/bottom-right corners in screen space
-//        float headerMinX = bounds.get(Section.NODE).min.x + border;
-//        float headerMaxX = bounds.get(Section.NODE).max.x - border;
-//        float headerMinY = bounds.get(Section.NODE).min.y + border;
-//        float headerMaxY = headerMinY + (bounds.get(Section.HEADER).max.y - bounds.get(Section.HEADER).min.y);
-//
-//        draw.addRectFilled(
-//            headerMinX, headerMinY, headerMaxX, headerMaxY,
-//            Color.headerBackground, rounding, ImDrawFlags.RoundCornersTop);
-//
-//        // content background
-//        draw.addRectFilled(
-//            bounds.get(Section.NODE).min.x + border, headerMaxY,
-//            bounds.get(Section.NODE).max.x - border,
-//            bounds.get(Section.NODE).max.y - border,
-//            Color.contentBackground, rounding, ImDrawFlags.RoundCornersBottom);
-//
-//        // header/content separator - draw after backgrounds so it overlaps
-//        // must be some sampling thing going on here that we have to adjust by 0.5f
-//        draw.addLine(
-//            headerMinX - 0.5f, headerMaxY,
-//            headerMaxX - 0.5f, headerMaxY,
-//            Color.separator, 1);
+        var drawList = NodeEditor.GetNodeBackgroundDrawList(globalId);
+        var rounding = styleNodeRounding - 1f;
+        var border = styleNodeBorderWidth;
+        if (NodeEditor.GetHoveredNode() == globalId) {
+            border = styleHoveredNodeBorderWidth;
+        } else if (NodeEditor.IsNodeSelected(globalId)) {
+            border = styleSelectedNodeBorderWidth;
+        }
+
+        // header background - with adjustments to fit the full node width
+        // NOTE: min/max are top-left/bottom-right corners in screen space
+        float headerHeight = bounds.get(Section.HEADER).max.get_y() - bounds.get(Section.HEADER).min.get_y();
+        float headerMinX = bounds.get(Section.NODE).min.get_x() + border;
+        float headerMaxX = bounds.get(Section.NODE).max.get_x() - border;
+        float headerMinY = bounds.get(Section.NODE).min.get_y() + border;
+        float headerMaxY = headerMinY + headerHeight;
+
+        drawList.AddRectFilled(
+                ImVec2.TMP_1.set(headerMinX, headerMinY),
+                ImVec2.TMP_2.set(headerMaxX, headerMaxY),
+                Colors.headerBackground, rounding, ImDrawFlags_RoundCornersTop);
+
+        // content background
+        drawList.AddRectFilled(
+                ImVec2.TMP_1.set(bounds.get(Section.NODE).min.get_x() + border, headerMaxY),
+                ImVec2.TMP_2.set(
+                        bounds.get(Section.NODE).max.get_x() - border,
+                        bounds.get(Section.NODE).max.get_y() - border),
+            Colors.contentBackground, rounding, ImDrawFlags_RoundCornersBottom);
+
+        // header/content separator - draw after backgrounds so it overlaps
+        // must be some sampling thing going on here that we have to adjust by 0.5f
+        drawList.AddLine(
+            ImVec2.TMP_1.set(headerMinX - 0.5f, headerMaxY),
+            ImVec2.TMP_2.set(headerMaxX - 0.5f, headerMaxY),
+            Colors.separator, 1);
     }
 
     public String toLabel() {

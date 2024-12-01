@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.example.nodeeditor.demo.BlueprintV2Example;
+import imgui.extension.nodeeditor.NodeEditor;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -20,20 +21,17 @@ public class EditorInfoPane {
     private final BlueprintV2Example editor;
     private final EditorSession session;
 
-    private int selectionChangeCount;
-
     public EditorInfoPane(BlueprintV2Example editor) {
         this.editor = editor;
         this.session = editor.session;
     }
 
     public void update(float delta) {
-        if (session.hasSelectionChanged()) {
-            selectionChangeCount++;
-        }
     }
 
     public void render() {
+        NodeEditor.SetCurrentEditor(session.editorContext);
+
         var style = Objects.requireNonNull(ImGui.GetStyle());
         var col = style.get_Colors(ImGuiCol_HeaderActive);
         var activeHeaderColor = Color.rgba8888(col.get_x(), col.get_y(), col.get_z(), col.get_w());
@@ -112,8 +110,8 @@ public class EditorInfoPane {
                 }
 
                 // selection change details
-                var plural = (selectionChangeCount == 1) ? "" : "s";
-                var text = String.format("Current selection: (changed %d time%s)", selectionChangeCount, plural);
+                var plural = (session.selectionChangeCount == 1) ? "" : "s";
+                var text = String.format("Current selection: (changed %d time%s)", session.selectionChangeCount, plural);
                 ImGui.Text(text);
 
                 ImGui.Indent();
@@ -155,6 +153,8 @@ public class EditorInfoPane {
             } // end section: metrics window toggle
         }
         ImGui.End();
+
+        NodeEditor.SetCurrentEditor(null);
     }
 
 //    // TODO(brian): this needs work
