@@ -18,7 +18,6 @@ import static imgui.ImGuiWindowFlags.*;
 public class BlueprintV2Example {
 
     private static final String TAG = BlueprintV2Example.class.getSimpleName();
-    private static final int MAIN_WINDOW_FLAGS = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
 
     public final EditorSession session;
 
@@ -54,18 +53,20 @@ public class BlueprintV2Example {
         Gdx.app.error(TAG, "save() not yet implemented");
     }
 
-    public void update() {
+    public void render() {
+        NodeEditor.SetCurrentEditor(session.editorContext);
+
+        // update all the editor components before rendering
         var delta = ImGui.GetIO().get_DeltaTime();
         session.update(delta);
         infoPane.update(delta);
         nodePane.update(delta);
-    }
 
-    public void render() {
         ImGui.SetNextWindowPos(ImVec2.TMP_1.set(0, 0));
         ImGui.SetNextWindowSize(ImGui.GetMainViewport().get_Size());
 
-        ImGui.Begin("Blueprint V2", null, MAIN_WINDOW_FLAGS);
+        int flags = ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize;
+        ImGui.Begin("Blueprint V2", null, flags);
         ImGui.PushStyleVar(ImGuiStyleVar_WindowRounding, 0f);
         ImGui.PushStyleVar(ImGuiStyleVar_WindowTitleAlign, ImVec2.TMP_1.set(0.5f, 0.5f));
 
@@ -90,5 +91,7 @@ public class BlueprintV2Example {
 
         ImGui.PopStyleVar(2);
         ImGui.End();
+
+        NodeEditor.SetCurrentEditor(null);
     }
 }

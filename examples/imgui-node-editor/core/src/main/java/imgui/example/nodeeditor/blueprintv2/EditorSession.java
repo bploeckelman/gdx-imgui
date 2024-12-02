@@ -43,6 +43,8 @@ public class EditorSession {
 
     public IDLIntArray selectedNodes = new IDLIntArray(0);
     public IDLIntArray selectedLinks = new IDLIntArray(0);
+    public int numSelectedNodes;
+    public int numSelectedLinks;
     public int selectionChangeCount;
 
     public EditorSession(BlueprintV2Example editor, EditorContext context) {
@@ -56,10 +58,8 @@ public class EditorSession {
     }
 
     public void update(float delta) {
-        NodeEditor.SetCurrentEditor(editorContext);
         updateTouch(delta);
         updateSelections();
-        NodeEditor.SetCurrentEditor(null);
     }
 
     // Editor object management -----------------------------------------------
@@ -107,21 +107,21 @@ public class EditorSession {
 
     // Query methods ----------------------------------------------------------
 
-    public Optional<Node> findNode(long globalId) {
+    public Optional<Node> findNode(int globalId) {
         var object = objectByGlobalId.get(globalId);
         return Optional.ofNullable(object)
                 .filter(Node.class::isInstance)
                 .map(Node.class::cast);
     }
 
-    public Optional<Link> findLink(long globalId) {
+    public Optional<Link> findLink(int globalId) {
         var object = objectByGlobalId.get(globalId);
         return Optional.ofNullable(object)
                 .filter(Link.class::isInstance)
                 .map(Link.class::cast);
     }
 
-    public Optional<Pin> findPin(long globalId) {
+    public Optional<Pin> findPin(int globalId) {
         var object = objectByGlobalId.get(globalId);
         return Optional.ofNullable(object)
                 .filter(Pin.class::isInstance)
@@ -133,41 +133,47 @@ public class EditorSession {
     public Stream<Node> getSelectedNodes() {
         return IntStream.range(0, selectedNodes.getSize())
                 .map(selectedNodes::getValue)
-                .mapToObj(objectByGlobalId::get)
-                .filter(Node.class::isInstance)
-                .map(Node.class::cast);
+                .peek(id -> Gdx.app.log(TAG, String.format("Selected node id: %d", id)))
+                .mapToObj(this::findNode)
+                .flatMap(Optional::stream);
     }
 
     public Stream<Link> getSelectedLinks() {
         return IntStream.range(0, selectedLinks.getSize())
                 .map(selectedLinks::getValue)
-                .mapToObj(objectByGlobalId::get)
-                .filter(Link.class::isInstance)
-                .map(Link.class::cast);
+                .peek(id -> Gdx.app.log(TAG, String.format("Selected link id: %d", id)))
+                .mapToObj(this::findLink)
+                .flatMap(Optional::stream);
     }
 
+    /**
+     * Update the selected state for nodes and links
+     * NOTE: There's a problem here when multi-selecting via a click+drag rectangle.
+     *   The selection id values are not being correctly written to the selectedNodes IDLIntArray
+     *   in NodeEditor.GetSelectedNodes() somewhere through the chain of jni / native calls.
+     *   This ends up causing a crash at some arbitrary spot after the selection change
+     *   possibly because there's a mismatch of strings between the jvm and native code
+     *   such that when the native code tries to free strings in calls like ImGui.Button(label, size)
+     *   it's trying to free memory that's not valid anymore.
+     *   I've tried a couple variations of how to specify the IDLIntArrays for selection ids here
+     *   and it doesn't seem to make much of a difference between the current version which is
+     *   very close to the imgui-node-editor blueprint example usage here:
+     *   https://github.com/thedmd/imgui-node-editor/blob/master/examples/blueprints-example/blueprints-example.cpp#L732
+     */
     public void updateSelections() {
-        // selected objects are tracked together in native code,
-        // so the selected id arrays are always the same length
-        // and can be bigger than the actual counts for either type
+        // selected objects are tracked together in native code, so the selected id arrays
+        // are always the same size to start with which can be more than the actual counts for either type
         int totalCount = NodeEditor.GetSelectedObjectCount();
-        selectedNodes = new IDLIntArray(totalCount);
-        selectedLinks = new IDLIntArray(totalCount);
+        selectedNodes.resize(totalCount);
+        selectedLinks.resize(totalCount);
 
         // populate the arrays with the selected object ids and get the counts by type
-        int numSelectedNodes = NodeEditor.GetSelectedNodes(selectedNodes, totalCount);
-        int numSelectedLinks = NodeEditor.GetSelectedLinks(selectedLinks, totalCount);
+        numSelectedNodes = NodeEditor.GetSelectedNodes(selectedNodes, totalCount);
+        numSelectedLinks = NodeEditor.GetSelectedLinks(selectedLinks, totalCount);
 
-        // (optional) trim the arrays to the actual counts
-        // this is not strictly necessary, but can be useful
-        // so we don't need to remember to iterate using `numSelectedX` counts
-        // instead of `selected[Nodes|Links].length` like one would expect
-        if (numSelectedNodes < totalCount) {
-            selectedNodes.resize(numSelectedNodes);
-        }
-        if (numSelectedLinks < totalCount) {
-            selectedLinks.resize(numSelectedLinks);
-        }
+        // resize the arrays to the actual counts for each type
+        selectedNodes.resize(numSelectedNodes);
+        selectedLinks.resize(numSelectedLinks);
 
         // update selection change count
         if (hasSelectionChanged()) {
@@ -176,7 +182,7 @@ public class EditorSession {
     }
 
     public boolean isSelected(Node node) {
-        for (int i = 0 ; i < selectedNodes.getSize(); i++) {
+        for (int i = 0; i < numSelectedNodes; i++) {
             if (selectedNodes.getValue(i) == node.globalId) {
                 return true;
             }
@@ -185,7 +191,7 @@ public class EditorSession {
     }
 
     public boolean isSelected(Link link) {
-        for (int i = 0 ; i < selectedLinks.getSize(); i++) {
+        for (int i = 0; i < numSelectedLinks; i++) {
             if (selectedLinks.getValue(i) == link.globalId) {
                 return true;
             }

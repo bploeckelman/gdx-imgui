@@ -49,7 +49,6 @@ public class NodeEditorExample extends ImGuiRenderer {
 //        SimpleExample.render(editorContext);
 //        blueprintExample.render(editorContext);
 
-        blueprintV2Example.update();
         blueprintV2Example.render();
     }
 

@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Color;
 import imgui.ImGui;
 import imgui.ImVec2;
 import imgui.example.nodeeditor.demo.BlueprintV2Example;
-import imgui.extension.nodeeditor.NodeEditor;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -30,8 +29,6 @@ public class EditorInfoPane {
     }
 
     public void render() {
-        NodeEditor.SetCurrentEditor(session.editorContext);
-
         var style = Objects.requireNonNull(ImGui.GetStyle());
         var col = style.get_Colors(ImGuiCol_HeaderActive);
         var activeHeaderColor = Color.rgba8888(col.get_x(), col.get_y(), col.get_z(), col.get_w());
@@ -153,87 +150,9 @@ public class EditorInfoPane {
             } // end section: metrics window toggle
         }
         ImGui.End();
-
-        NodeEditor.SetCurrentEditor(null);
     }
 
-//    // TODO(brian): this needs work
-//    private void renderNodeDetailRow(Node node) {
-//        ImGui.PushID(node.globalId);
-//        var drawList = ImGui.GetWindowDrawList();
-//        var start = ImGui.GetCursorScreenPos();
-//        var width = ImGui.GetContentRegionAvail().get_x();
-//        var lineHeight = ImGui.GetTextLineHeight();
-//        var style = ImGui.GetStyle();
-//        var iconPanelPos = new ImVec2();
-//
-//        // node detail row: show 'just touched' indicator indicator that fades over time
-//        float progress = session.getTouchProgress(node);
-//        if (progress > 0) {
-//            drawList.AddLine(
-//                    ImVec2.TMP_1.set(start.get_x() - 8f, start.get_y()),
-//                    ImVec2.TMP_2.set(start.get_x() - 8f, start.get_y() + lineHeight),
-//                    Color.rgba8888(1f, 0f, 0f, 1f - progress), 4f);
-//        }
-//
-//        // node detail row: name and handle selection input, including multi-select
-//        var isSelected = session.isSelected(node);
-//        if (ImGui.Selectable(node.toString(), isSelected, ImGuiSelectableFlags_SpanAllColumns, ImVec2.TMP_1.set(0, 0))) {
-//            // TODO(brian): how do we get individual key status?
-////            if (ImGui.GetIO().GetKeyCtrl()) {
-////                if (isSelected) {
-////                    session.deselect(node);
-////                } else {
-////                    session.select(node, true);
-////                }
-////            } else {
-//                session.select(node);
-////            }
-//
-//            // focus on the selection in the editor
-//            editor.navigateToSelection();
-//        }
-//
-//        // node detail row: on hover - show node state in tooltip
-////        if (ImGui.IsItemHovered() && node.hasState()) {
-////            ImGui.SetTooltip("State: \{node.getState()}");
-////        }
-//
-//        // node detail row: pointer id text
-//        int numIcons = 2;
-//        var iconSize = lineHeight;
-//        var globalIdText = String.format("(%d)", node.globalId);
-//        var globalIdTextSize = ImGui.CalcTextSize(globalIdText);
-//        var edgeIconBottom = (lineHeight - iconSize) / 2f;
-//        var styleSpace = style.get_IndentSpacing() + style.get_ItemInnerSpacing().get_x();
-//        var edgeIconLeft = width - styleSpace - (numIcons * iconSize);
-//        iconPanelPos.set(start.get_x() + edgeIconLeft, start.get_y() + edgeIconBottom);
-//
-//        float edgeTextLeft = iconPanelPos.x - globalIdTextSize.get_x() - style.get_ItemInnerSpacing().get_x();
-//        drawList.AddText(ImVec2.TMP_1.set(edgeTextLeft, start.get_y()), Color.WHITE.toIntBits(), globalIdText);
-//
-//        float iconLeftSpace = style.get_ItemSpacing().get_x();
-//        float indentWidth = style.get_IndentSpacing();
-//        float offsetFromX = edgeTextLeft + globalIdTextSize.get_x() + iconLeftSpace;
-//        ImGui.SameLine(offsetFromX, 0);
-//        iconPanelPos.set(ImGui.GetCursorScreenPos());
-//        iconPanelPos.x -= indentWidth / 2f;
-//        renderIcon(Icons.Save, "save", iconPanelPos, node, () -> {});//node::updateSavedState);
-//
-//        float iconWidth = ImGui.CalcTextSize(Icons.Save).get_x();
-//        ImGui.SameLine(offsetFromX - indentWidth + iconWidth, iconWidth);
-//        iconPanelPos.set(ImGui.GetCursorScreenPos());
-//        iconPanelPos.x -= indentWidth / 2f;
-//        renderIcon(Icons.RedoAlt, "restore", iconPanelPos, node, () -> {
-////            node.restoreSavedState();
-////            editor.restoreNodeState(node);
-////            node.clearSavedState();
-//        });
-//
-//        ImGui.PopID();
-//    }
-
-    // TODO(brian): needs work
+    // TODO(brian): this needs work
     private void renderNodeDetailRow(Node node) {
         ImGui.PushID(node.globalId);
         var drawList = ImGui.GetWindowDrawList();
@@ -286,7 +205,7 @@ public class EditorInfoPane {
         iconPanelPos.set(start.get_x() + edgeIconLeft, start.get_y() + edgeIconBottom);
 
         float edgeTextLeft = iconPanelPos.get_x() - globalIdTextSize.get_x() - style.get_ItemInnerSpacing().get_x();
-        drawList.AddText(ImVec2.TMP_1.set(edgeTextLeft, start.get_y()), Color.GRAY.toIntBits(), globalIdText);
+        drawList.AddText(ImVec2.TMP_1.set(edgeTextLeft, start.get_y()), Color.WHITE.toIntBits(), globalIdText);
 
         float iconLeftSpace = style.get_ItemSpacing().get_x();
         float indentWidth = style.get_IndentSpacing();
@@ -298,7 +217,7 @@ public class EditorInfoPane {
         float iconWidth = ImGui.CalcTextSize(Icons.Save).get_x();
         ImGui.SameLine(offsetFromX - indentWidth + iconWidth, iconWidth);
         iconPanelPos.set(ImGui.GetCursorScreenPos().get_x() - indentWidth / 2f, ImGui.GetCursorScreenPos().get_y());
-        renderIcon(Icons.Restore, "restore", iconPanelPos, node, () -> {
+        renderIcon(Icons.RedoAlt, "restore", iconPanelPos, node, () -> {
 //            node.restoreSavedState();
 //            editor.restoreNodeState(node);
 //            node.clearSavedState();
@@ -306,6 +225,80 @@ public class EditorInfoPane {
 
         ImGui.PopID();
     }
+
+    // TODO(brian): needs work
+//    private void renderNodeDetailRow(Node node) {
+//        ImGui.PushID(node.globalId);
+//        var drawList = ImGui.GetWindowDrawList();
+//        var start = ImGui.GetCursorScreenPos();
+//        var width = ImGui.GetContentRegionAvail().get_x();
+//        var lineHeight = ImGui.GetTextLineHeight();
+//        var style = ImGui.GetStyle();
+//        var iconPanelPos = new ImVec2();
+//
+//        // node detail row: show 'just touched' indicator indicator that fades over time
+//        float progress = session.getTouchProgress(node);
+//        if (progress > 0) {
+//            drawList.AddLine(
+//                    ImVec2.TMP_1.set(start.get_x() - 8f, start.get_y()),
+//                    ImVec2.TMP_2.set(start.get_x() - 8f, start.get_y() + lineHeight),
+//                    Color.rgba8888(1f, 0f, 0f, 1f - progress), 4f);
+//        }
+//
+//        // node detail row: name and handle selection input, including multi-select
+//        var isSelected = session.isSelected(node);
+//        if (ImGui.Selectable(node.toString(), isSelected, ImGuiSelectableFlags_SpanAllColumns, ImVec2.TMP_1.set(0, 0))) {
+//            // TODO(brian): how do we get individual key status?
+////            if (ImGui.GetIO().GetKeyCtrl()) {
+////                if (isSelected) {
+////                    session.deselect(node);
+////                } else {
+////                    session.select(node, true);
+////                }
+////            } else {
+//                session.select(node);
+////            }
+//
+//            // focus on the selection in the editor
+//            editor.navigateToSelection();
+//        }
+//
+//        // node detail row: on hover - show node state in tooltip
+////        if (ImGui.IsItemHovered() && node.hasState()) {
+////            ImGui.SetTooltip("State: \{node.getState()}");
+////        }
+//
+//        // node detail row: pointer id text
+//        int numIcons = 2;
+//        var iconSize = lineHeight;
+//        var globalIdText = String.format("(%d)", node.globalId);
+//        var globalIdTextSize = ImGui.CalcTextSize(globalIdText);
+//        var edgeIconBottom = (lineHeight - iconSize) / 2f;
+//        var styleSpace = style.get_IndentSpacing() + style.get_ItemInnerSpacing().get_x();
+//        var edgeIconLeft = width - styleSpace - (numIcons * iconSize);
+//        iconPanelPos.set(start.get_x() + edgeIconLeft, start.get_y() + edgeIconBottom);
+//
+//        float edgeTextLeft = iconPanelPos.get_x() - globalIdTextSize.get_x() - style.get_ItemInnerSpacing().get_x();
+//        drawList.AddText(ImVec2.TMP_1.set(edgeTextLeft, start.get_y()), Color.GRAY.toIntBits(), globalIdText);
+//
+//        float iconLeftSpace = style.get_ItemSpacing().get_x();
+//        float indentWidth = style.get_IndentSpacing();
+//        float offsetFromX = edgeTextLeft + globalIdTextSize.get_x() + iconLeftSpace;
+//        ImGui.SameLine(offsetFromX, 0);
+//        iconPanelPos.set(ImGui.GetCursorScreenPos().get_x() - indentWidth / 2f, ImGui.GetCursorScreenPos().get_y());
+////        renderIcon(Icons.Save, "save", iconPanelPos, node, () -> {});//node::updateSavedState);
+//
+//        float iconWidth = ImGui.CalcTextSize(Icons.Save).get_x();
+//        ImGui.SameLine(offsetFromX - indentWidth + iconWidth, iconWidth);
+//        iconPanelPos.set(ImGui.GetCursorScreenPos().get_x() - indentWidth / 2f, ImGui.GetCursorScreenPos().get_y());
+////        renderIcon(Icons.Restore, "restore", iconPanelPos, node, () -> {
+////            node.restoreSavedState();
+////            editor.restoreNodeState(node);
+////            node.clearSavedState();
+////        });
+//
+//        ImGui.PopID();
+//    }
 
     private void renderIcon(String icon, String buttonId, ImVec2 iconPanelPos, Node node, Runnable onClick) {
         var drawList = ImGui.GetWindowDrawList();

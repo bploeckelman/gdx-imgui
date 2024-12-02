@@ -9,7 +9,7 @@ import imgui.extension.nodeeditor.NodeEditor;
 import imgui.extension.nodeeditor.PinKind;
 import imgui.idl.helper.IDLInt;
 
-import static imgui.ImGuiStyleVar.*;
+import static imgui.ImGuiStyleVar.ImGuiStyleVar_WindowPadding;
 import static imgui.ImGuiWindowFlags.*;
 import static imgui.extension.nodeeditor.StyleColor.*;
 import static imgui.extension.nodeeditor.StyleVar.*;
@@ -31,7 +31,6 @@ public class EditorNodePane {
     public void render() {
         int flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
         if (ImGui.Begin("Editor", null, flags)) {
-            NodeEditor.SetCurrentEditor(session.editorContext);
             NodeEditor.Begin("Scene Editor");
             setStyle();
 
@@ -44,7 +43,6 @@ public class EditorNodePane {
 
             unsetStyle();
             NodeEditor.End();
-            NodeEditor.SetCurrentEditor(null);
         }
         ImGui.End();
     }
